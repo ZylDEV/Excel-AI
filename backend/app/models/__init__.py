@@ -1,0 +1,36 @@
+"""Pydantic schema models for Excel Genius AI."""
+from backend.app.models.schemas import (
+    FormulaGenerateRequest,
+    FormulaExplainRequest,
+    FormulaResponse,
+    ExplainDataRequest,
+    ExplainDataResponse,
+    CleanerAnalyzeRequest,
+    CleanerAnalyzeResponse,
+    CleanerApplyRequest,
+    CleanerApplyResponse,
+    SheetData,
+    AuditRunRequest,
+    AuditRunResponse,
+    SheetContext,
+    ChatMessageRequest,
+    ChatMessageResponse,
+)
+
+__all__ = [
+    "FormulaGenerateRequest",
+    "FormulaExplainRequest",
+    "FormulaResponse",
+    "ExplainDataRequest",
+    "ExplainDataResponse",
+    "CleanerAnalyzeRequest",
+    "CleanerAnalyzeResponse",
+    "CleanerApplyRequest",
+    "CleanerApplyResponse",
+    "SheetData",
+    "AuditRunRequest",
+    "AuditRunResponse",
+    "SheetContext",
+    "ChatMessageRequest",
+    "ChatMessageResponse",
+]

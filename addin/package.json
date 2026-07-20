@@ -1,0 +1,42 @@
+{
+  "name": "excel-genius-ai-addin",
+  "version": "0.1.0",
+  "description": "Excel Genius AI - Office Add-in",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "webpack serve --mode development",
+    "build": "webpack --mode production",
+    "start": "office-addin-debugging start manifest.xml",
+    "stop": "office-addin-debugging stop manifest.xml",
+    "lint": "eslint src/",
+    "prettier": "prettier --write src/"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "axios": "^1.7.9",
+    "chart.js": "^4.4.7",
+    "lucide-react": "^1.25.0",
+    "office-ui-fabric-react": "^7.203.0",
+    "react": "^18.3.1",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/office-js": "^1.0.437",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.4",
+    "eslint": "^9.16.0",
+    "html-webpack-plugin": "^5.6.3",
+    "prettier": "^3.4.2",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.7.2",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  }
+}
