@@ -16,6 +16,7 @@ def explain_data(
     headers: list[str],
     sheet_name: str = "",
     api_key: str | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Generate insights, statistics, and a natural-language explanation.
 
@@ -45,7 +46,7 @@ def explain_data(
     statistics = explainer.get_summary_statistics(df)
 
     context = f"Sheet name: {sheet_name}\n" if sheet_name else ""
-    explanation = explainer.generate_explanation(df, question="", api_key=api_key)
+    explanation = explainer.generate_explanation(df, question="", api_key=api_key, provider=provider)
 
     return {
         "insights": insights,

@@ -3,6 +3,7 @@
 import axios from "axios";
 
 const BASE_URL_V1 = "http://localhost:8000/api/v1";
+const BASE_URL_V2 = "http://localhost:8000/api/v2";
 const BASE_URL_V3 = "http://localhost:8000/api/v3";
 
 function getApiKey(): string {
@@ -12,6 +13,12 @@ function getApiKey(): string {
 const api = axios.create({
   baseURL: BASE_URL_V1,
   timeout: 60000,
+  headers: { "Content-Type": "application/json" },
+});
+
+const apiV2 = axios.create({
+  baseURL: BASE_URL_V2,
+  timeout: 120000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -26,14 +33,34 @@ apiV3.interceptors.request.use((config) => {
   if (key) {
     config.headers["X-API-Key"] = key;
   }
+  const provider = localStorage.getItem("llm_provider") || "";
+  if (provider) {
+    config.headers["X-LLM-Provider"] = provider;
+  }
   return config;
 });
 
-// Add interceptor to attach API key to every request
+// Add interceptor to attach API key & provider to every request
 api.interceptors.request.use((config) => {
   const key = getApiKey();
   if (key) {
     config.headers["X-API-Key"] = key;
+  }
+  const provider = localStorage.getItem("llm_provider") || "";
+  if (provider) {
+    config.headers["X-LLM-Provider"] = provider;
+  }
+  return config;
+});
+
+apiV2.interceptors.request.use((config) => {
+  const key = getApiKey();
+  if (key) {
+    config.headers["X-API-Key"] = key;
+  }
+  const provider = localStorage.getItem("llm_provider") || "";
+  if (provider) {
+    config.headers["X-LLM-Provider"] = provider;
   }
   return config;
 });
@@ -46,14 +73,12 @@ export async function getActiveSheetData(): Promise<{
   data: unknown[][];
   sheetName: string;
 }> {
-  // Check if Office.js is available
-  if (typeof Excel === "undefined" || !Excel.run) {
-    throw new Error("Excel AI harus dijalankan di dalam Microsoft Excel. Silakan buka add-in ini melalui menu Insert > Add-ins di Excel.");
-  }
+  // Coba baca dari Excel (hanya jalan kalau di dalam Excel add-in)
+  const isExcelContext = typeof Excel !== "undefined" && typeof Excel.run === "function";
 
-  return new Promise((resolve, reject) => {
+  if (isExcelContext) {
     try {
-      Excel.run(async (context) => {
+      return await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         sheet.load("name");
         const range = sheet.getUsedRange();
@@ -64,8 +89,7 @@ export async function getActiveSheetData(): Promise<{
         const values: unknown[][] = range.values;
 
         if (!values || values.length === 0) {
-          reject(new Error("Tidak ada data ditemukan di sheet aktif."));
-          return;
+          throw new Error("Tidak ada data ditemukan di sheet aktif.");
         }
 
         const headers = (values[0] as string[]).map((h) =>
@@ -73,16 +97,43 @@ export async function getActiveSheetData(): Promise<{
         );
         const data = values.slice(1);
 
-        resolve({ headers, data, sheetName });
+        return { headers, data, sheetName };
       });
     } catch (err) {
-      reject(
-        new Error(
-          "Gagal membaca data dari Excel. Pastikan Anda berada di dalam workbook Excel."
-        )
-      );
+      // Gagal baca Excel — fallback ke sample data
+      console.warn("Gagal baca Excel, pakai sample data:", err);
     }
-  });
+  }
+
+  // Browser mode atau gagal baca — pakai sample data
+  return getSampleData();
+}
+
+/** Return sample/demo data for browser testing mode. */
+function getSampleData(): Promise<{
+  headers: string[];
+  data: unknown[][];
+  sheetName: string;
+}> {
+  const sampleData = {
+    sheetName: "Penjualan",
+    headers: ["Tanggal", "Produk", "Kategori", "Jumlah", "Harga", "Total", "Wilayah"],
+    data: [
+      ["2024-01-05", "Laptop ThinkPad", "Elektronik", 5, 15000000, 75000000, "Jakarta"],
+      ["2024-01-12", "Mouse Wireless", "Aksesoris", 20, 250000, 5000000, "Bandung"],
+      ["2024-01-18", "Keyboard Mechanical", "Aksesoris", 15, 850000, 12750000, "Jakarta"],
+      ["2024-02-03", "Monitor 24inch", "Elektronik", 8, 3500000, 28000000, "Surabaya"],
+      ["2024-02-14", "Laptop ThinkPad", "Elektronik", 3, 15000000, 45000000, "Bandung"],
+      ["2024-02-20", "USB Hub 4 Port", "Aksesoris", 30, 180000, 5400000, "Jakarta"],
+      ["2024-03-02", "Webcam HD", "Elektronik", 12, 750000, 9000000, "Surabaya"],
+      ["2024-03-10", "Mouse Wireless", "Aksesoris", 25, 250000, 6250000, "Medan"],
+      ["2024-03-22", "Monitor 24inch", "Elektronik", 6, 3500000, 21000000, "Jakarta"],
+      ["2024-04-05", "Keyboard Mechanical", "Aksesoris", 18, 850000, 15300000, "Surabaya"],
+      ["2024-04-15", "Laptop ThinkPad", "Elektronik", 7, 15000000, 105000000, "Jakarta"],
+      ["2024-04-28", "Webcam HD", "Elektronik", 10, 750000, 7500000, "Bandung"],
+    ],
+  };
+  return Promise.resolve(sampleData);
 }
 
 /** Read all worksheets from the workbook. */
@@ -256,7 +307,7 @@ export async function generateDashboard(
   headers: string[],
   sheetName?: string
 ): Promise<DashboardResponse> {
-  const res = await api.post("/v2/dashboard/generate", {
+  const res = await apiV2.post("/dashboard/generate", {
     data, headers, sheet_name: sheetName || "Sheet1"
   });
   return res.data;
@@ -268,10 +319,10 @@ export async function runForecast(
   headers: string[],
   dateCol: string,
   valueCol: string,
-  periods?: number
+  periods: number = 12
 ): Promise<ForecastResponse> {
-  const res = await api.post("/v2/forecast/run", {
-    data, headers, date_col: dateCol, value_col: valueCol, periods: periods || 12
+  const res = await apiV2.post("/forecast/run", {
+    data, headers, date_col: dateCol, value_col: valueCol, periods
   });
   return res.data;
 }
@@ -282,7 +333,7 @@ export async function generateInsights(
   headers: string[],
   sheetName?: string
 ): Promise<InsightResponse> {
-  const res = await api.post("/v2/insights/generate", {
+  const res = await apiV2.post("/insights/generate", {
     data, headers, sheet_name: sheetName || "Sheet1"
   });
   return res.data;
@@ -290,12 +341,12 @@ export async function generateInsights(
 
 // === V2: Reports ===
 export async function generatePdf(dashboardData: DashboardResponse['dashboard']): Promise<ReportResponse> {
-  const res = await api.post("/v2/reports/pdf", { dashboard_data: dashboardData });
+  const res = await apiV2.post("/reports/pdf", { dashboard_data: dashboardData });
   return res.data;
 }
 
 export async function generatePpt(dashboardData: DashboardResponse['dashboard']): Promise<ReportResponse> {
-  const res = await api.post("/v2/reports/ppt", { dashboard_data: dashboardData });
+  const res = await apiV2.post("/reports/ppt", { dashboard_data: dashboardData });
   return res.data;
 }
 

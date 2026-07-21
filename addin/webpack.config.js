@@ -38,7 +38,20 @@ module.exports = {
   ],
   devServer: {
     port: 3000,
-    server: "https",
+    client: {
+      overlay: false,
+    },
+    server: {
+      type: "https",
+      options: {
+        cert: require("fs").readFileSync(
+          path.resolve(process.env.HOME || process.env.USERPROFILE, ".office-addin-dev-certs", "localhost.crt")
+        ),
+        key: require("fs").readFileSync(
+          path.resolve(process.env.HOME || process.env.USERPROFILE, ".office-addin-dev-certs", "localhost.key")
+        ),
+      },
+    },
     hot: true,
     headers: {
       "Access-Control-Allow-Origin": "*",

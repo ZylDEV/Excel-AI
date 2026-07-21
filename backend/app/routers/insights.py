@@ -16,6 +16,7 @@ router = APIRouter(tags=["Insights V2"])
 async def api_generate_insights(
     req: InsightsGenerateRequest,
     x_api_key: str = Header(None, alias="X-API-Key"),
+    x_llm_provider: str = Header(None, alias="X-LLM-Provider"),
 ):
     """Generate business intelligence insights from spreadsheet data.
 
@@ -29,6 +30,7 @@ async def api_generate_insights(
             headers=req.headers,
             sheet_name=req.sheet_name,
             api_key=x_api_key,
+            provider=x_llm_provider,
         )
         return InsightsGenerateResponse(**result)
     except Exception as e:

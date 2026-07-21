@@ -73,7 +73,16 @@ class WorkbookAuditor:
     def _to_dataframe(self, headers: list[str], data: list[list]) -> pd.DataFrame:
         if not headers or not data:
             return pd.DataFrame()
-        col_names = [str(h) if h is not None else f"Column_{i}" for i, h in enumerate(headers)]
+        col_names = []
+        seen = {}
+        for i, h in enumerate(headers):
+            name = str(h) if h is not None else f"Column_{i}"
+            if name in seen:
+                seen[name] += 1
+                name = f"{name}_{seen[name]}"
+            else:
+                seen[name] = 0
+            col_names.append(name)
         df = pd.DataFrame(data, columns=col_names)
         df = df.map(lambda x: np.nan if x is None else x)
         # Coerce numeric

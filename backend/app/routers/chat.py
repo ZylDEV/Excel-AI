@@ -16,6 +16,7 @@ router = APIRouter(tags=["Chat"])
 async def api_chat_message(
     req: ChatMessageRequest,
     x_api_key: str = Header(None, alias="X-API-Key"),
+    x_llm_provider: str = Header(None, alias="X-LLM-Provider"),
 ):
     """Send a chat message about the workbook data and get an AI-powered reply."""
     try:
@@ -28,6 +29,7 @@ async def api_chat_message(
             message=req.message,
             workbook_context=context,
             api_key=x_api_key,
+            provider=x_llm_provider,
         )
         return ChatMessageResponse(**result)
     except Exception as e:

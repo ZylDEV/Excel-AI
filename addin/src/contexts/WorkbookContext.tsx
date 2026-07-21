@@ -49,6 +49,29 @@ export const WorkbookProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     refresh();
   }, [refresh]);
 
+  // Auto-refresh ketika sheet berubah (hanya di Excel)
+  useEffect(() => {
+    const isExcelContext = typeof Excel !== "undefined" && typeof Excel.run === "function";
+    if (!isExcelContext) return;
+
+    let eventHandler: { remove: () => void } | null = null;
+
+    Excel.run(async (context) => {
+      const worksheets = context.workbook.worksheets;
+      worksheets.onActivated.add(async (args) => {
+        await context.sync();
+        refresh();
+      });
+      await context.sync();
+    }).catch(() => {
+      // Silently ignore — fallback ke refresh manual
+    });
+
+    return () => {
+      // Cleanup jika diperlukan
+    };
+  }, [refresh]);
+
   return (
     <WorkbookContext.Provider value={{ activeSheet, isLoading, error, refresh }}>
       {children}

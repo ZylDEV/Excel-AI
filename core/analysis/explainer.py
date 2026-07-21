@@ -156,7 +156,7 @@ class DataExplainer:
 
         return summary
 
-    def generate_explanation(self, df: pd.DataFrame, question: str = "", api_key: str | None = None) -> str:
+    def generate_explanation(self, df: pd.DataFrame, question: str = "", api_key: str | None = None, provider: str | None = None) -> str:
         """Use the LLM to generate a natural-language explanation of the data."""
         # Build a compact summary for the prompt
         summary = self.get_summary_statistics(df)
@@ -230,7 +230,7 @@ class DataExplainer:
         prompt = "\n".join(prompt_parts)
 
         try:
-            client = LLMClient(api_key=api_key)
+            client = LLMClient(api_key=api_key, provider=provider)
             return client.generate(
                 prompt=prompt,
                 system_prompt="You are a helpful data analyst. Provide clear, concise explanations suitable for business users. Avoid excessive technical jargon.",

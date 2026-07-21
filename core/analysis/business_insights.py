@@ -39,7 +39,7 @@ class BusinessInsights:
         return obj
 
     @classmethod
-    def generate(cls, df: pd.DataFrame, sheet_name: str = "", api_key: str | None = None) -> dict[str, Any]:
+    def generate(cls, df: pd.DataFrame, sheet_name: str = "", api_key: str | None = None, provider: str | None = None) -> dict[str, Any]:
         """Generate comprehensive business insights from a DataFrame.
 
         Parameters
@@ -71,7 +71,7 @@ class BusinessInsights:
                 correlations = cls._find_correlations(df)
                 top_performers = cls._find_top_performers(df)
                 summary = cls._generate_summary(
-                    df, trends, anomalies, correlations, top_performers, sheet_name, api_key
+                    df, trends, anomalies, correlations, top_performers, sheet_name, api_key, provider
                 )
 
                 return {
@@ -252,6 +252,7 @@ class BusinessInsights:
         top_performers: list[dict],
         sheet_name: str = "",
         api_key: str | None = None,
+        provider: str | None = None,
     ) -> str:
         """Generate a summary text, optionally using LLM."""
         # Build a statistics-based summary as the base
@@ -275,7 +276,7 @@ class BusinessInsights:
         if api_key:
             try:
                 llm_summary = BusinessInsights._llm_summary(
-                    df, trends, anomalies, correlations, top_performers, sheet_name, api_key
+                    df, trends, anomalies, correlations, top_performers, sheet_name, api_key, provider
                 )
                 return llm_summary
             except Exception:
@@ -292,6 +293,7 @@ class BusinessInsights:
         top_performers: list[dict],
         sheet_name: str = "",
         api_key: str = "",
+        provider: str | None = None,
     ) -> str:
         """Generate a natural-language business summary using LLM."""
         from core.utils.llm_client import LLMClient
@@ -325,5 +327,5 @@ class BusinessInsights:
             f"Berikan wawasan bisnis yang actionable."
         )
 
-        client = LLMClient(api_key=api_key)
+        client = LLMClient(api_key=api_key, provider=provider)
         return client.generate(prompt)

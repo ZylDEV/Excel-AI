@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import "./styles.css";
-import { WorkbookProvider, useWorkbook } from "./contexts/WorkbookContext";
+import { WorkbookProvider } from "./contexts/WorkbookContext";
 import Layout from "./components/Layout";
 import { TabKey } from "./components/Navbar";
 import DataBar from "./components/DataBar";
@@ -65,5 +65,15 @@ const App: React.FC = () => {
 const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
-  root.render(<App />);
+
+  // Cek apakah di Excel add-in
+  if (typeof Office !== "undefined" && typeof Office.onReady === "function") {
+    // Di Excel — tunggu Office siap
+    Office.onReady(() => {
+      root.render(<App />);
+    });
+  } else {
+    // Di browser — langsung render
+    root.render(<App />);
+  }
 }

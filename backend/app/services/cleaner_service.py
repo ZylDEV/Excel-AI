@@ -15,6 +15,7 @@ def analyze_quality(
     data: list[list[Any]],
     headers: list[str],
     api_key: str | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Analyse data quality and return issues.
 
@@ -47,6 +48,7 @@ def apply_cleaning(
     headers: list[str],
     fixes: list[str],
     api_key: str | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Apply cleaning fixes to the data.
 

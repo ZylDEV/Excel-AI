@@ -21,6 +21,7 @@ router = APIRouter(tags=["Cleaner"])
 async def api_analyze_quality(
     req: CleanerAnalyzeRequest,
     x_api_key: str = Header(None, alias="X-API-Key"),
+    x_llm_provider: str = Header(None, alias="X-LLM-Provider"),
 ):
     """Analyse data quality and return a list of issues found."""
     try:
@@ -28,6 +29,7 @@ async def api_analyze_quality(
             data=req.data,
             headers=req.headers,
             api_key=x_api_key,
+            provider=x_llm_provider,
         )
         return CleanerAnalyzeResponse(**result)
     except Exception as e:
@@ -39,6 +41,7 @@ async def api_analyze_quality(
 async def api_apply_cleaning(
     req: CleanerApplyRequest,
     x_api_key: str = Header(None, alias="X-API-Key"),
+    x_llm_provider: str = Header(None, alias="X-LLM-Provider"),
 ):
     """Apply cleaning fixes to the data."""
     try:
@@ -47,6 +50,7 @@ async def api_apply_cleaning(
             headers=req.headers,
             fixes=req.fixes,
             api_key=x_api_key,
+            provider=x_llm_provider,
         )
         return CleanerApplyResponse(**result)
     except Exception as e:

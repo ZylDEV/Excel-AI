@@ -33,7 +33,16 @@ def read_range(
     col_names: Optional[list[str]]
 
     if headers:
-        col_names = [str(h) if h is not None else f"Column_{i}" for i, h in enumerate(data[0])]
+        col_names = []
+        seen = {}
+        for i, h in enumerate(data[0]):
+            name = str(h) if h is not None else f"Column_{i}"
+            if name in seen:
+                seen[name] += 1
+                name = f"{name}_{seen[name]}"
+            else:
+                seen[name] = 0
+            col_names.append(name)
     else:
         col_names = [f"Column_{i}" for i in range(len(data[0]))]
 
@@ -90,9 +99,9 @@ def get_statistics(df: pd.DataFrame) -> dict[str, Any]:
         "column_count": len(df.columns),
         "columns": list(df.columns),
         "missing": {
-            col: int(df[col].isna().sum()) for col in df.columns
+            col: int(df[col].isna().sum().sum()) for col in df.columns
         },
-        "dtypes": {col: str(df[col].dtype) for col in df.columns},
+        "dtypes": {col: str(df[col].dtype) if isinstance(df[col], pd.Series) else str(df[col].iloc[:, 0].dtype) for col in df.columns},
     }
 
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()

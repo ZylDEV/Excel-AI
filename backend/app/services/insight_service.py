@@ -14,6 +14,7 @@ def generate_insights(
     headers: list[str],
     sheet_name: str = "",
     api_key: str | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Generate business intelligence insights from tabular data.
 
@@ -47,6 +48,7 @@ def generate_insights(
             df=df,
             sheet_name=sheet_name,
             api_key=api_key,
+            provider=provider,
         )
         return result
 

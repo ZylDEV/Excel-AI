@@ -13,6 +13,7 @@ def generate_formula(
     description: str,
     sheet_context: str = "",
     api_key: str | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Generate an Excel formula from a natural-language description.
 
@@ -51,7 +52,7 @@ def generate_formula(
     prompt = "\n".join(prompt_parts)
 
     try:
-        client = LLMClient(api_key=api_key)
+        client = LLMClient(api_key=api_key, provider=provider)
         result = client.generate_json(
             prompt=prompt,
             system_prompt="You are an Excel formula expert. Always return valid JSON with keys: formula, explanation, example.",
@@ -108,6 +109,7 @@ def generate_formula(
 def explain_formula(
     formula: str,
     api_key: str | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Explain an Excel formula in plain English.
 
@@ -136,7 +138,7 @@ Example response format:
 """
 
     try:
-        client = LLMClient(api_key=api_key)
+        client = LLMClient(api_key=api_key, provider=provider)
         result = client.generate_json(
             prompt=prompt,
             system_prompt="You are an Excel formula expert. Always return valid JSON with keys: formula, explanation, example.",

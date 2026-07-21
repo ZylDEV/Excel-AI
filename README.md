@@ -80,8 +80,8 @@ Bring Your Own Key (BYOK) — supports 9 AI providers:
 
 ### 1. Clone & Setup
 ```bash
-git clone https://github.com/yourusername/excel-ai.git
-cd excel-ai
+git clone https://github.com/ZylDEV/Excel-AI.git
+cd Excel-AI
 ```
 
 ### 2. Backend
@@ -92,8 +92,10 @@ cd backend
 python -m venv .venv
 
 # Activate
-# Windows:
+# Windows (CMD):
 .venv\Scripts\activate
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
 # macOS/Linux:
 source .venv/bin/activate
 
@@ -104,14 +106,19 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 3. Frontend
+> **Note:** If the virtual environment was moved from another path, use this instead:
+> ```bash
+> .\.venv\Scripts\python -m uvicorn app.main:app --reload --port 8000
+> ```
+
+### 3. Frontend (Add-in)
 ```bash
 cd addin
 
 # Install dependencies
 npm install --legacy-peer-deps
 
-# Development server (for browser testing)
+# Development server (for browser testing with sample data)
 npm run dev
 
 # Or sideload into Excel
@@ -119,7 +126,8 @@ npm start
 ```
 
 ### 4. Access
-- **Frontend**: https://localhost:3000
+- **Frontend (Browser)**: https://localhost:3000
+- **Excel Add-in**: Run `npm start` from the `addin` folder
 - **Backend API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 
@@ -127,18 +135,29 @@ npm start
 
 ## How to Use
 
-### In Browser (Demo Mode)
+### In Browser (Demo Mode with Sample Data)
 1. Open https://localhost:3000
-2. Click **Settings** → select AI provider → enter API key → **Test Connection**
-3. Navigate to any feature and click **Baca Excel** (or use sample data if available)
-4. Some pages support manual CSV input
+2. Data sample penjualan akan otomatis terisi (12 baris data)
+3. Buka **Settings** — pilih AI provider — masukkan API key — **Test Connection** — **Simpan**
+4. Buka **AI Assistant** dan tanya tentang data, misal: "Berapa total penjualan per produk?"
+5. Atau coba fitur lain: **Explain**, **Cleaner**, **Audit**, **Dashboard**
 
-### In Excel
-1. Open Excel
-2. Go to **Insert** → **Add-ins** → **My Add-ins**
-3. Upload `addin/manifest.xml` or sideload via `npm start`
-4. The add-in appears as a task pane
-5. Data is automatically read from the active worksheet
+### In Excel (Production Mode)
+1. Pastikan backend dan frontend dev server berjalan
+2. Jalankan sideload:
+   ```bash
+   cd addin
+   npm start
+   ```
+3. Excel terbuka dengan add-in "Excel AI" di task pane kanan
+4. Data otomatis terbaca dari worksheet aktif
+5. Add-in juga otomatis refresh saat pindah sheet
+
+### Manual Install di Excel
+1. Buka Excel — **Insert** — **Add-ins** — **My Add-ins**
+2. Klik **Upload My Add-in**
+3. Pilih file `addin/manifest.xml`
+4. Add-in akan muncul di task pane setiap kali Excel dibuka (backend & frontend tetap harus berjalan)
 
 ### Getting API Keys
 
@@ -156,10 +175,21 @@ npm start
 
 ---
 
+## Recent Fixes & Improvements
+
+- **Provider routing fix** — The `X-LLM-Provider` header is now sent from the frontend to the backend, so DeepSeek and other providers are correctly identified instead of being auto-detected as OpenAI
+- **Duplicate column names** — Fixed `_to_dataframe` functions across the codebase to handle duplicate column names safely
+- **Sample data in browser** — When running in browser (`npm run dev`), sample sales data is automatically loaded for testing
+- **Office.js loading** — Office.js is loaded dynamically with a fallback timeout, so browser mode works without errors
+- **Webpack overlay disabled** — Error overlay is disabled to prevent cross-origin errors from Office.js from blocking the UI
+- **Auto-refresh on sheet change** — The add-in automatically re-reads data when the user switches worksheets in Excel
+
+---
+
 ## Project Structure
 
 ```
-excel-ai/
+Excel-AI/
 ├── backend/                     # Python FastAPI server
 │   ├── app/
 │   │   ├── main.py              # Entry point, router registration
@@ -220,7 +250,7 @@ excel-ai/
 │   │   ├── index.tsx            # App entry + routing
 │   │   ├── styles.css           # Design system (blue theme)
 │   │   ├── contexts/
-│   │   │   ├── WorkbookContext.tsx  # Shared workbook data
+│   │   │   ├── WorkbookContext.tsx  # Shared workbook data + auto-refresh
 │   │   │   └── RightSidebarContext.tsx
 │   │   ├── components/
 │   │   │   ├── Navbar.tsx       # Group + sub-tab navigation
@@ -229,7 +259,7 @@ excel-ai/
 │   │   │   ├── LoadingSpinner.tsx
 │   │   │   └── ErrorAlert.tsx
 │   │   ├── pages/               # 16 feature pages
-│   │   └── services/api.ts      # Axios API client
+│   │   └── services/api.ts      # Axios API client (V1, V2, V3)
 │   ├── manifest.xml             # Excel add-in manifest
 │   ├── package.json
 │   ├── tsconfig.json

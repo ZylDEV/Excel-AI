@@ -16,6 +16,7 @@ def process_chat_message(
     message: str,
     workbook_context: list[dict[str, Any]] | None = None,
     api_key: str | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Process a chat message and return an AI reply, optionally with structured data.
 
@@ -73,7 +74,7 @@ def process_chat_message(
     prompt = "\n".join(prompt_parts)
 
     try:
-        client = LLMClient(api_key=api_key)
+        client = LLMClient(api_key=api_key, provider=provider)
 
         if wants_data:
             result = client.generate_json(
@@ -189,7 +190,17 @@ def _to_dataframe(headers: list[str], data: list[list]) -> pd.DataFrame:
     """Convert raw headers + data into a DataFrame."""
     if not headers or not data:
         return pd.DataFrame()
-    col_names = [str(h) if h is not None else f"Column_{i}" for i, h in enumerate(headers)]
+    # Pastikan tidak ada nama kolom duplikat
+    col_names = []
+    seen = {}
+    for i, h in enumerate(headers):
+        name = str(h) if h is not None else f"Column_{i}"
+        if name in seen:
+            seen[name] += 1
+            name = f"{name}_{seen[name]}"
+        else:
+            seen[name] = 0
+        col_names.append(name)
     df = pd.DataFrame(data, columns=col_names)
     import numpy as np
     df = df.map(lambda x: np.nan if x is None else x)

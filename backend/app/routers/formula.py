@@ -20,6 +20,7 @@ router = APIRouter(tags=["Formula"])
 async def api_generate_formula(
     req: FormulaGenerateRequest,
     x_api_key: str = Header(None, alias="X-API-Key"),
+    x_llm_provider: str = Header(None, alias="X-LLM-Provider"),
 ):
     """Generate an Excel formula from a natural-language description."""
     try:
@@ -27,6 +28,7 @@ async def api_generate_formula(
             description=req.description,
             sheet_context=req.sheet_context,
             api_key=x_api_key,
+            provider=x_llm_provider,
         )
         return FormulaResponse(**result)
     except Exception as e:
@@ -38,12 +40,14 @@ async def api_generate_formula(
 async def api_explain_formula(
     req: FormulaExplainRequest,
     x_api_key: str = Header(None, alias="X-API-Key"),
+    x_llm_provider: str = Header(None, alias="X-LLM-Provider"),
 ):
     """Explain an Excel formula in plain English."""
     try:
         result = explain_formula(
             formula=req.formula,
             api_key=x_api_key,
+            provider=x_llm_provider,
         )
         return FormulaResponse(**result)
     except Exception as e:

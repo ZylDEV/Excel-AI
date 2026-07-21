@@ -111,7 +111,7 @@ const FinancialPage: React.FC = () => {
 
   // Group ratios by category
   const groupedRatios: Record<string, FinancialResponse["ratios"]> = {};
-  if (result) {
+  if (result?.ratios) {
     result.ratios.forEach((r) => {
       if (!groupedRatios[r.category]) groupedRatios[r.category] = [];
       groupedRatios[r.category].push(r);

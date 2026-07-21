@@ -16,6 +16,7 @@ router = APIRouter(tags=["Explain"])
 async def api_explain_data(
     req: ExplainDataRequest,
     x_api_key: str = Header(None, alias="X-API-Key"),
+    x_llm_provider: str = Header(None, alias="X-LLM-Provider"),
 ):
     """Generate insights, statistics, and a natural-language explanation of the provided data."""
     try:
@@ -24,6 +25,7 @@ async def api_explain_data(
             headers=req.headers,
             sheet_name=req.sheet_name,
             api_key=x_api_key,
+            provider=x_llm_provider,
         )
         return ExplainDataResponse(**result)
     except Exception as e:
